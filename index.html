@@ -84,7 +84,7 @@
   <!-- ADD CUSTOMER -->
   <div id="addCustomer" class="card hidden">
     <h3>Add Lead</h3>
-    <input id="name" placeholder="Full Name">
+    <input id="fullName" placeholder="Full Name">
     <input id="mobile" placeholder="Mobile">
     <input id="area" placeholder="Area Interested">
     <input id="budget" placeholder="Budget">
@@ -139,7 +139,7 @@ function api(payload, callback) {
 
 /******** ADD CUSTOMER ********/
 function addCustomer() {
-  if (!name.value || !mobile.value) {
+  if (!fullName.value || !mobile.value) {
     alert("Name and Mobile are required");
     return;
   }
@@ -147,7 +147,7 @@ function addCustomer() {
   api({
     action: "addCustomer",
     data: {
-      FullName: name.value,
+      FullName: fullName.value,
       Mobile: mobile.value,
       AreaInterested: area.value,
       Budget: budget.value,
@@ -157,7 +157,7 @@ function addCustomer() {
   }, res => {
     alert(res.message);
     if (res.status === "success") {
-      name.value = "";
+      fullName.value = "";
       mobile.value = "";
       area.value = "";
       budget.value = "";
