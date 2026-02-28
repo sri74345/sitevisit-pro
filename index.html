@@ -1,0 +1,215 @@
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>SiteVisit Pro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f5f5f5;
+    }
+    header {
+      background: #0b8457;
+      color: #fff;
+      padding: 12px;
+      text-align: center;
+      font-size: 18px;
+    }
+    .container {
+      padding: 12px;
+    }
+    .card {
+      background: #fff;
+      padding: 12px;
+      margin-bottom: 10px;
+      border-radius: 6px;
+    }
+    input, select, textarea, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+    button {
+      background: #0b8457;
+      color: white;
+      border: none;
+      border-radius: 4px;
+    }
+    .whatsapp {
+      background: #25D366;
+    }
+    .nav {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      display: flex;
+      background: #fff;
+      border-top: 1px solid #ccc;
+    }
+    .nav button {
+      flex: 1;
+      border-radius: 0;
+      background: #fff;
+      color: #0b8457;
+      border: none;
+      padding: 10px;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>SiteVisit Pro</header>
+
+<div class="container">
+
+  <!-- DASHBOARD -->
+  <div id="dashboard" class="card">
+    <h3>Dashboard</h3>
+    <button onclick="loadBirthdays()">🎂 Today Birthdays</button>
+    <div id="birthdayList"></div>
+  </div>
+
+  <!-- ADD CUSTOMER -->
+  <div id="addCustomer" class="card hidden">
+    <h3>Add Lead</h3>
+    <input id="name" placeholder="Full Name">
+    <input id="mobile" placeholder="Mobile">
+    <input id="area" placeholder="Area Interested">
+    <input id="budget" placeholder="Budget">
+    <input id="birthday" type="date">
+    <textarea id="notes" placeholder="Notes"></textarea>
+    <button onclick="addCustomer()">Save Lead</button>
+  </div>
+
+  <!-- SEARCH -->
+  <div id="search" class="card hidden">
+    <h3>Search Leads</h3>
+    <input id="searchText" placeholder="Name or Mobile">
+    <button onclick="searchCustomers()">Search</button>
+    <div id="results"></div>
+  </div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="nav">
+  <button onclick="show('dashboard')">Dashboard</button>
+  <button onclick="show('addCustomer')">Add</button>
+  <button onclick="show('search')">Search</button>
+</div>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbxS6FqB95Ok3evrT-FvqPun35HMUMT26Dty2tnDhKVfuPm8Vj50Bd0FqBsDzOA1scKcig/exec";
+
+function show(id) {
+  document.querySelectorAll('.card').forEach(c => c.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+}
+
+function api(payload, callback) {
+  fetch(API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  })
+  .then(res => res.json())
+  .then(data => {
+    console.log("API Response:", data);
+    callback(data);
+  })
+  .catch(err => {
+    alert("API Error: " + err);
+    console.error(err);
+  });
+}
+
+/******** ADD CUSTOMER ********/
+function addCustomer() {
+  if (!name.value || !mobile.value) {
+    alert("Name and Mobile are required");
+    return;
+  }
+
+  api({
+    action: "addCustomer",
+    data: {
+      FullName: name.value,
+      Mobile: mobile.value,
+      AreaInterested: area.value,
+      Budget: budget.value,
+      Birthday: birthday.value,
+      Notes: notes.value
+    }
+  }, res => {
+    alert(res.message);
+    if (res.status === "success") {
+      name.value = "";
+      mobile.value = "";
+      area.value = "";
+      budget.value = "";
+      birthday.value = "";
+      notes.value = "";
+    }
+  });
+}
+
+/******** SEARCH ********/
+function searchCustomers() {
+  api({
+    action: "getCustomers",
+    filters: { name: searchText.value }
+  }, res => {
+    results.innerHTML = "";
+    res.data.forEach(c => {
+      results.innerHTML += `
+        <div class="card">
+          <b>${c.FullName}</b><br>
+          ${c.Mobile}<br>
+          Status: ${c.LeadStatus}<br>
+          <button class="whatsapp" onclick="sendWA('${c.Mobile}','Hello ${c.FullName}')">
+            WhatsApp
+          </button>
+        </div>`;
+    });
+  });
+}
+
+/******** BIRTHDAYS ********/
+function loadBirthdays() {
+  api({ action: "getTodaysBirthdays" }, res => {
+    birthdayList.innerHTML = "";
+    res.data.forEach(b => {
+      birthdayList.innerHTML += `
+        <div class="card">
+          🎉 ${b.FullName}
+          <button class="whatsapp"
+            onclick="sendWA('${b.Mobile}','Happy Birthday ${b.FullName}!')">
+            Send Wish
+          </button>
+        </div>`;
+    });
+  });
+}
+
+/******** WHATSAPP ********/
+function sendWA(mobile, msg) {
+  window.open(`https://wa.me/91${mobile}?text=${encodeURIComponent(msg)}`);
+}
+</script>
+
+</body>
+</html>
