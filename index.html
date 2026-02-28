@@ -121,19 +121,22 @@ function show(id) {
 function api(payload, callback) {
   fetch(API_URL, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
     body: JSON.stringify(payload)
   })
-  .then(res => res.json())
-  .then(data => {
-    console.log("API Response:", data);
-    callback(data);
+  .then(r => r.text())
+  .then(text => {
+    try {
+      const data = JSON.parse(text);
+      console.log("API Response:", data);
+      callback(data);
+    } catch (e) {
+      console.log("Raw response:", text);
+      alert("API connected but response is invalid");
+    }
   })
   .catch(err => {
-    alert("API Error: " + err);
     console.error(err);
+    alert("API Error: Failed to fetch (network blocked)");
   });
 }
 
@@ -213,3 +216,4 @@ function sendWA(mobile, msg) {
 
 </body>
 </html>
+
